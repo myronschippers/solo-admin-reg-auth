@@ -21,8 +21,8 @@ router.post('/register', (req, res, next) => {
   const username = req.body.username;
   const password = encryptLib.encryptPassword(req.body.password);
 
-  const queryText = `INSERT INTO "user" (username, password)
-    VALUES ($1, $2) RETURNING id`;
+  const queryText = `INSERT INTO "user" (username, password, email, first_name, last_name)
+    VALUES ($1, $2, $3, $4, $5) RETURNING id`;
   pool
     .query(queryText, [username, password])
     .then(() => res.sendStatus(201))
@@ -30,6 +30,28 @@ router.post('/register', (req, res, next) => {
       console.log('User registration failed: ', err);
       res.sendStatus(500);
     });
+});
+
+// Save a new user and send them a notification
+router.post('/register/new', rejectUnauthenticated, (req, res) => {
+  // STEP 1: generate unique id for temporary user
+  // STEP 2: create new user with information provided and temp unique id
+  // STEP 3: send an email off to the new user
+  // STEP 4: if there is not enough info or an error saving user surface and error
+});
+
+// GET a user that has the matched temporary ID
+router.get('/register/:tempId', (req, res) => {
+  // STEP 1: see if there is a user that matches the "tempId"
+  // STEP 2: send back user info for matched user
+  // STEP 3: if there is no match then send back error 403
+});
+
+// Update USER registration with password and username
+router.put('/register/:tempId', (req, res) => {
+  // STEP 1: does the a user exist with this "tempId"
+  // STEP 2: update user with new username and password
+  // STEP 3: if there is no match then send back error 403
 });
 
 // Handles login form authenticate/login POST
