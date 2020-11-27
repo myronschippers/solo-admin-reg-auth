@@ -55,9 +55,13 @@ function generateUUID() {
 // Save a new user and send them a notification
 router.post('/register/new', rejectUnauthenticated, (req, res) => {
   // STEP 1: generate unique id for temporary user
+  const uuidForReg = generateUUID();
+  console.log('UUID:', uuidForReg);
   // STEP 2: create new user with information provided and temp unique id
   // STEP 3: send an email off to the new user
   // STEP 4: if there is not enough info or an error saving user surface and error
+
+  res.sendStatus(201);
 });
 
 // GET a user that has the matched temporary ID
