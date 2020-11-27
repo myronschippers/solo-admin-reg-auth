@@ -1,4 +1,5 @@
 const express = require('express');
+const performance = require('perf_hooks');
 const {
   rejectUnauthenticated,
 } = require('../modules/authentication-middleware');
@@ -67,16 +68,38 @@ function generateUUID() {
   });
 }
 
+function logError(err) {
+  console.log('\n====================');
+  console.log('SERVER ERROR:');
+  console.log('====================\n');
+  console.log(err);
+}
+
 // Save a new user and send them a notification
 router.post('/register/internal', rejectUnauthenticated, (req, res) => {
   // STEP 1: generate unique id for temporary user
   const uuidForReg = generateUUID();
   console.log('UUID:', uuidForReg);
   // STEP 2: create new user with information provided and temp unique id
-  // STEP 3: send an email off to the new user
-  // STEP 4: if there is not enough info or an error saving user surface and error
+  const { email, first_name, last_name, role_id } = req.body;
+  const queryToCreateUser = `INSERT INTO "user" (email, first_name, last_name, role_id, temp_reg_id)
+  VALUES ($1, $2, $3, $4, $5);`;
 
-  res.sendStatus(201);
+  pool
+    .query(
+      // query for creating user
+      queryToCreateUser,
+      // data for new user
+      [email, first_name, last_name, role_id, uuidForReg]
+    )
+    .then((dbResp) => {
+      // STEP 3: send an email off to the new user
+      res.sendStatus(201);
+    })
+    .catch((err) => {
+      logError(err);
+    });
+  // STEP 4: if there is not enough info or an error saving user surface and error
 });
 
 // GET a user that has the matched temporary ID
