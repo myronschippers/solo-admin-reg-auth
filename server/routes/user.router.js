@@ -53,7 +53,7 @@ function generateUUID() {
 }
 
 // Save a new user and send them a notification
-router.post('/register/new', rejectUnauthenticated, (req, res) => {
+router.post('/register/internal', rejectUnauthenticated, (req, res) => {
   // STEP 1: generate unique id for temporary user
   const uuidForReg = generateUUID();
   console.log('UUID:', uuidForReg);
