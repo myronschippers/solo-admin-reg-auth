@@ -7,6 +7,10 @@ const encryptLib = require('../modules/encryption');
 const pool = require('../modules/pool');
 const userStrategy = require('../strategies/user.strategy');
 
+// email for registration
+const nodemailer = require('nodemailer');
+const url = require('url');
+
 const router = express.Router();
 
 // Handles Ajax request for user information if user is authenticated
@@ -84,6 +88,27 @@ router.post('/register/internal', rejectUnauthenticated, (req, res) => {
   const { email, first_name, last_name, role_id } = req.body;
   const queryToCreateUser = `INSERT INTO "user" (email, first_name, last_name, role_id, temp_reg_id)
   VALUES ($1, $2, $3, $4, $5);`;
+  let baseAppHost = process.env.LOCAL_HOST;
+
+  if (process.env.DATABASE_URL != null) {
+    const dbParams = url.parse(process.env.DATABASE_URL);
+    baseAppHost = dbParams.hostname;
+  }
+  const finalizeRegistrationURL = `${baseAppHost}/#/finalize-registration/${uuidForReg}`;
+
+  const mailMessageConfig = {
+    from: req.user.email,
+    to: email,
+    subject: 'Welcome to the Waypoint',
+    text: `You have been registered for an account at Waypoint. Follow the link to finish registration, http://localhost:3000/#/finalize-registration/${uuidForReg}`,
+    html: `<div>
+      <h1>Welcome to the Waypoint system</h1>
+      <p>Your account has been created by ${req.user.first_name} ${req.user.last_name}. In order to access the system you will need to complete your registration by following the link below.</p>
+      <a href="${finalizeRegistrationURL}" target="_blank">
+        Complete Registration
+      </a>
+    </div>`,
+  };
 
   pool
     .query(
@@ -94,10 +119,29 @@ router.post('/register/internal', rejectUnauthenticated, (req, res) => {
     )
     .then((dbResp) => {
       // STEP 3: send an email off to the new user
-      res.sendStatus(201);
+      let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.MAILER_EMAIL,
+          pass: process.env.MAILER_EMAIL_PASS,
+        },
+      });
+
+      transporter.sendMail(mailMessageConfig, (err, info) => {
+        if (info != null) {
+          console.log('\n===================');
+          console.log('Mailer, info:', info);
+          res.sendStatus(201);
+        } else {
+          console.log('\n===================');
+          console.log('Mailer, err:', err);
+          res.sendStatus(500);
+        }
+      });
     })
     .catch((err) => {
       logError(err);
+      res.sendStatus(500);
     });
   // STEP 4: if there is not enough info or an error saving user surface and error
 });
