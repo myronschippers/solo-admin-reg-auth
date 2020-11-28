@@ -147,14 +147,32 @@ router.post('/register/internal', rejectUnauthenticated, (req, res) => {
 });
 
 // GET a user that has the matched temporary ID
-router.get('/register/:tempId', (req, res) => {
+router.get('/register/temp/:tempId', (req, res) => {
   // STEP 1: see if there is a user that matches the "tempId"
-  // STEP 2: send back user info for matched user
-  // STEP 3: if there is no match then send back error 403
+  const queryForTempUser = `SELECT "email", "first_name", "last_name" FROM "user"
+    WHERE temp_reg_id = $1;`;
+  pool
+    .query(queryForTempUser, [req.params.tempId])
+    .then((dbResp) => {
+      const tempUser = dbResp.rows[0];
+
+      if (tempUser != null) {
+        // STEP 2: send back user info for matched user
+        res.send(tempUser);
+        return;
+      }
+
+      // STEP 3: if there is no match then send back error 403
+      res.sendStatus(500);
+    })
+    .catch((err) => {
+      logError(err);
+      res.sendStatus(500);
+    });
 });
 
 // Update USER registration with password and username
-router.put('/register/:tempId', (req, res) => {
+router.put('/register/temp/:tempId', (req, res) => {
   // STEP 1: does the a user exist with this "tempId"
   // STEP 2: update user with new username and password
   // STEP 3: if there is no match then send back error 403
