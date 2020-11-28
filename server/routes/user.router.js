@@ -6,6 +6,7 @@ const encryptLib = require('../modules/encryption');
 const pool = require('../modules/pool');
 const userStrategy = require('../strategies/user.strategy');
 const { generateUUID } = require('../services/uuid.service');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
@@ -88,7 +89,37 @@ router.post('/pre-register', rejectUnauthenticated, (req, res) => {
           ])
           .then((dbResp) => {
             // TODO - STEP 3: send a message to the temporary user (nodemailer)
-            res.sendStatus(201);
+            const transportConfig = {
+              service: 'gmail',
+              auth: {
+                user: process.env.MAILER_EMAIL,
+                pass: process.env.MAILER_EMAIL_PASS,
+              },
+            };
+            let transporter = nodemailer.createTransport(transportConfig);
+
+            // create link url for user
+            let registerLinkBase = process.env.HOST_ENV;
+            const registerLink = `${registerLinkBase}/#/register/${tempRegId}`;
+
+            const mailOptions = {
+              from: req.user.email, // sender address
+              to: email, // list of receivers
+              subject: 'Welcome to The System', // Subject line
+              html: `<div>
+                <h1>Welcome</h1>
+                <p>Please finalize your registration to The System by following the link below</p>
+                <a href="${registerLink}" target="_blank">Continue Registration</a>
+              </div>`, // plain text body
+            };
+            transporter.sendMail(mailOptions, (err, info) => {
+              if (err != null) {
+                res.sendStatus(500);
+                return;
+              }
+
+              res.sendStatus(201);
+            });
           })
           .catch((err) => {
             console.log(err);
