@@ -74,8 +74,26 @@ router.post('/pre-register', rejectUnauthenticated, (req, res) => {
         const tempRegId = generateUUID();
         console.log('UUID: ', tempRegId);
         // TODO - STEP 2: create a new temporary user
-        // TODO - STEP 3: send a message to the temporary user (nodemailer)
-        res.sendStatus(201);
+        const { first_name, last_name, role_id, email } = req.body;
+        const queryCreateTempUser = `INSERT INTO "user" (first_name, last_name, role_id, email, temp_reg_id)
+        VALUES ($1, $2, $3, $4, $5);`;
+
+        pool
+          .query(queryCreateTempUser, [
+            first_name,
+            last_name,
+            role_id,
+            email,
+            tempRegId,
+          ])
+          .then((dbResp) => {
+            // TODO - STEP 3: send a message to the temporary user (nodemailer)
+            res.sendStatus(201);
+          })
+          .catch((err) => {
+            console.log(err);
+            res.sendStatus(500);
+          });
         return;
       }
 
