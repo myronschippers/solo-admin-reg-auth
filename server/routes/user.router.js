@@ -140,9 +140,28 @@ router.post('/pre-register', rejectUnauthenticated, (req, res) => {
 // PROCESS STEP 2: validate that a user is pre-registered (GET) [public]
 router.get('/register/:tempId', (req, res) => {
   // TODO - STEP 1: GET temporary user info matching tempId
-  // TODO - STEP 2: send back the user info
-  // TODO - STEP 3: reject the user if no match is found
-  res.send({});
+  const queryForTempUser = `SELECT id, first_name, last_name, email FROM "user"
+  WHERE temp_reg_id = $1;`;
+
+  pool
+    .query(queryForTempUser, [req.params.tempId])
+    .then((dbResp) => {
+      // TODO - STEP 2: send back the user info
+      const tempUser = dbResp.rows[0];
+
+      if (tempUser != null) {
+        res.send(tempUser);
+        // terminate function early
+        return;
+      }
+
+      // TODO - STEP 3: reject the user if no match is found
+      res.sendStatus(403);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.sendStatus(500);
+    });
 });
 
 // PROCESS STEP 3: save the username & password for the pre-registered user (PUT) [public]
