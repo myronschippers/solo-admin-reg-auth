@@ -173,9 +173,26 @@ router.get('/register/temp/:tempId', (req, res) => {
 
 // Update USER registration with password and username
 router.put('/register/temp/:tempId', (req, res) => {
-  // STEP 1: does the a user exist with this "tempId"
+  // STEP 1: does the user exist with this "tempId"
+  const queryForTempUser = `UPDATE "user" SET username=$1, password=$2, temp_reg_id=$3 WHERE temp_reg_id=$4;`;
   // STEP 2: update user with new username and password
-  // STEP 3: if there is no match then send back error 403
+  const username = req.body.username;
+  const password = encryptLib.encryptPassword(req.body.password);
+
+  pool
+    .query(
+      queryForTempUser,
+      // query data
+      [username, password, null, req.params.tempId]
+    )
+    .then((dbResp) => {
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      // STEP 3: if there is no match then send back error 403
+      console.log(err);
+      res.sendStatus(403);
+    });
 });
 
 // Handles login form authenticate/login POST
