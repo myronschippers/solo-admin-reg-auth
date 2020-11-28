@@ -5,6 +5,7 @@ const {
 const encryptLib = require('../modules/encryption');
 const pool = require('../modules/pool');
 const userStrategy = require('../strategies/user.strategy');
+const { generateUUID } = require('../services/uuid.service');
 
 const router = express.Router();
 
@@ -70,6 +71,8 @@ router.post('/pre-register', rejectUnauthenticated, (req, res) => {
 
       if (userWithRole.access_level === 0) {
         // TODO - STEP 1: create temporary registration id
+        const tempRegId = generateUUID();
+        console.log('UUID: ', tempRegId);
         // TODO - STEP 2: create a new temporary user
         // TODO - STEP 3: send a message to the temporary user (nodemailer)
         res.sendStatus(201);
