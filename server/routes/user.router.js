@@ -54,4 +54,51 @@ router.post('/logout', (req, res) => {
   res.sendStatus(200);
 });
 
+//
+// NEW REGISTRATION PROCESS
+// ------------------------------
+
+// PROCESS STEP 1: admin create a new user (POST) [secure]
+router.post('/pre-register', rejectUnauthenticated, (req, res) => {
+  const queryForUserRole = `SELECT * FROM "user"
+  JOIN "roles" ON "user".role_id = "roles".id
+  WHERE "user".id = $1;`;
+  pool
+    .query(queryForUserRole, [req.user.id])
+    .then((dbResp) => {
+      const userWithRole = dbResp.rows[0];
+
+      if (userWithRole.access_level === 0) {
+        // TODO - STEP 1: create temporary registration id
+        // TODO - STEP 2: create a new temporary user
+        // TODO - STEP 3: send a message to the temporary user (nodemailer)
+        res.sendStatus(201);
+        return;
+      }
+
+      console.log('not admin');
+      res.sendStatus(403);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.sendStatus(403);
+    });
+});
+
+// PROCESS STEP 2: validate that a user is pre-registered (GET) [public]
+router.get('/register/:tempId', (req, res) => {
+  // TODO - STEP 1: GET temporary user info matching tempId
+  // TODO - STEP 2: send back the user info
+  // TODO - STEP 3: reject the user if no match is found
+  res.send({});
+});
+
+// PROCESS STEP 3: save the username & password for the pre-registered user (PUT) [public]
+router.put('/register/:tempId', (req, res) => {
+  // TODO - STEP 1: make sure a user matches tempId
+  // TODO - STEP 2: update specific temporary user with username & password (remove temp_reg_id)
+  // TODO - STEP 3: reject when there is no match
+  res.sendStatus(200);
+});
+
 module.exports = router;
