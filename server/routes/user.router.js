@@ -168,8 +168,25 @@ router.get('/register/:tempId', (req, res) => {
 router.put('/register/:tempId', (req, res) => {
   // TODO - STEP 1: make sure a user matches tempId
   // TODO - STEP 2: update specific temporary user with username & password (remove temp_reg_id)
-  // TODO - STEP 3: reject when there is no match
-  res.sendStatus(200);
+  const queryUpdateTempUser = `UPDATE "user" SET username=$1, password=$2, temp_reg_id=$3
+  WHERE temp_reg_id=$4;`;
+  const password = encryptLib.encryptPassword(req.body.password);
+
+  pool
+    .query(queryUpdateTempUser, [
+      req.body.username,
+      password,
+      null,
+      req.params.tempId,
+    ])
+    .then((dbResp) => {
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      console.log(err);
+      // TODO - STEP 3: reject when there is no match
+      res.sendStatus(500);
+    });
 });
 
 module.exports = router;
