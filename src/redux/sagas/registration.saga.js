@@ -22,8 +22,21 @@ function* registerUser(action) {
   }
 }
 
+function* preregisterTempUser(action) {
+  try {
+    // POST our new user
+    yield axios.post('/api/user/pre-register', action.payload.user);
+
+    // dispatch to get users...
+  } catch (err) {
+    console.log('Error', err);
+    yield put({ type: 'REGISTRATION_FAILED_TEMP_USER' });
+  }
+}
+
 function* registrationSaga() {
   yield takeLatest('REGISTER', registerUser);
+  yield takeLatest('POST_TEMP_USER', preregisterTempUser);
 }
 
 export default registrationSaga;

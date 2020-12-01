@@ -1,4 +1,5 @@
 import React from 'react';
+import NewUserForm from '../NewUserForm/NewUserForm';
 
 // This is one of our simplest components
 // It doesn't have local state, so it can be a function component.
@@ -6,8 +7,14 @@ import React from 'react';
 // or even care what the redux state is, so it doesn't need 'connect()'
 
 const InfoPage = () => (
-  <div>
-    <p>Info Page</p>
+  <div className="container">
+    <h2>Info of Users</h2>
+
+    {/* form content */}
+    <NewUserForm />
+
+    {/* list all users */}
+    <p>List of Users</p>
   </div>
 );
 
