@@ -8,7 +8,10 @@ function* registerUser(action) {
     yield put({ type: 'CLEAR_REGISTRATION_ERROR' });
 
     // passes the username and password from the payload to the server
-    yield axios.post('/api/user/register', action.payload);
+    yield axios.put(`/api/user/register/${action.payload.tempId}`, {
+      username: action.payload.username,
+      password: action.payload.password,
+    });
 
     // automatically log a user in after registration
     yield put({ type: 'LOGIN', payload: action.payload });
@@ -34,9 +37,29 @@ function* preregisterTempUser(action) {
   }
 }
 
+function* getTempUser(action) {
+  try {
+    yield put({ type: 'CLEAR_REGISTRATION_ERROR' });
+
+    const response = yield axios.get(
+      `/api/user/register/${action.payload.tempId}`
+    );
+
+    // dispatch to set temp user
+    yield put({
+      type: 'SET_TEMP_USER',
+      payload: response.data,
+    });
+  } catch (err) {
+    console.log('Error', err);
+    yield put({ type: 'REGISTRATION_FAILED_TEMP_USER_NOT_AVAILABLE' });
+  }
+}
+
 function* registrationSaga() {
   yield takeLatest('REGISTER', registerUser);
   yield takeLatest('POST_TEMP_USER', preregisterTempUser);
+  yield takeLatest('GET_TEMP_USER', getTempUser);
 }
 
 export default registrationSaga;

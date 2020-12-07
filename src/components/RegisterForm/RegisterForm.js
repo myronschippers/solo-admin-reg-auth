@@ -14,8 +14,8 @@ class RegisterForm extends Component {
     this.props.dispatch({
       type: 'REGISTER',
       payload: {
-        username: this.state.username,
-        password: this.state.password,
+        ...this.state,
+        tempId: this.props.tempKey,
       },
     });
   }; // end registerUser
@@ -29,7 +29,9 @@ class RegisterForm extends Component {
   render() {
     return (
       <form className="formPanel" onSubmit={this.registerUser}>
-        <h2>Register User</h2>
+        <h2>Welcome {this.props.store.tempUser.first_name},</h2>
+        <p>Please finish registering with The System.</p>
+        <h4>Register User</h4>
         {this.props.store.errors.registrationMessage && (
           <h3 className="alert" role="alert">
             {this.props.store.errors.registrationMessage}

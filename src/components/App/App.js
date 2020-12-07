@@ -79,7 +79,7 @@ class App extends Component {
               // - if logged in, redirects to "/user"
               // - else shows RegisterPage at "/registration"
               exact
-              path="/registration"
+              path="/register/:tempKey"
               component={RegisterPage}
               authRedirect="/user"
             />

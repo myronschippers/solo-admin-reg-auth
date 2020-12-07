@@ -11,10 +11,24 @@ class RegisterPage extends Component {
     password: '',
   };
 
+  componentDidMount() {
+    console.log('TEMP KEY:', this.props.match.params.tempKey);
+    this.props.dispatch({
+      type: 'GET_TEMP_USER',
+      payload: {
+        tempId: this.props.match.params.tempKey,
+      },
+    });
+  }
+
   render() {
     return (
-      <div>
-        <RegisterForm />
+      <div className="container">
+        {this.props.store.errors.registrationMessage !== 'NOT AVAILABLE' ? (
+          <RegisterForm tempKey={this.props.match.params.tempKey} />
+        ) : (
+          <p>Please contact system Admin.</p>
+        )}
       </div>
     );
   }
